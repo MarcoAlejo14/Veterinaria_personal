@@ -30,7 +30,7 @@ namespace VeterinariaWeb.Controllers
             //todo : leer datos de la BD
             using (var conexion = new SqlConnection(cadenaconexion))
             {
-                using (var comando = new SqlCommand("Select * from Productos", conexion))
+                using (var comando = new SqlCommand("SELECT P.*, CP.Nombre AS NombreCategoria FROM Productos P INNER JOIN CategoriaProductos CP ON P.CategoriaID = CP.ID", conexion))
                 {
                     conexion.Open();
                     using (var lector = comando.ExecuteReader())
@@ -39,12 +39,7 @@ namespace VeterinariaWeb.Controllers
                         {
                             while (lector.Read())
                             {
-                                listaProductos.Add(new Producto
-                                {
-                                    ID = lector.GetInt32(0),
-                                    Nombre = lector.GetString(1),
-                                    Descripcion = lector.GetString(2)
-                                });
+                                listaProductos.Add(convertirReaderEnProducto(lector));
                             }
                         }
                     }
@@ -60,7 +55,7 @@ namespace VeterinariaWeb.Controllers
             using (var conexion = new SqlConnection(cadenaconexion))
             {
 
-                using (var comando = new SqlCommand("Select * FROM Productos WHERE ID = @ID",conexion))
+                using (var comando = new SqlCommand("SELECT P.*, CP.Nombre AS NombreCategoria FROM Productos P INNER JOIN CategoriaProductos CP ON P.CategoriaID = CP.ID WHERE P.ID = @ID", conexion))
                 {
                     comando.Parameters.AddWithValue("@ID", id);
                     conexion.Open();
@@ -69,18 +64,30 @@ namespace VeterinariaWeb.Controllers
                         if(lector !=null && lector.HasRows)
                         {
                             lector.Read();
-                            producto = new Producto()
-                            {
-                                ID = lector.GetInt32(0),
-                                Nombre = lector.GetString(1),
-                                Descripcion = lector.GetString(2)
-                            };
+                            producto = convertirReaderEnProducto(lector);
                         }
                     }
                 }
 
             }
                 return producto;
+        }
+        private Producto convertirReaderEnProducto(SqlDataReader lector)
+        {
+            return new Producto()
+            {
+                ID = lector.GetInt32(0),
+                Nombre = lector.GetString(1),
+                Descripcion = lector.GetString(2),
+                Imagen = lector.GetString(3),
+                Precio = lector.GetDecimal(4),
+                CategoriaID = lector.GetInt32(5),
+                Categoria = new Categoria()
+                {
+                    ID = lector.GetInt32(5),
+                    Nombre = lector.GetString(7)
+                }
+            };
         }
         #endregion
     }

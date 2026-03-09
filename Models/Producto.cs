@@ -9,7 +9,7 @@
         public decimal Precio { get; set; }
         public int CategoriaID { get; set; }
         public bool Activo { get; set; }
-
+        public Categoria Categoria { get; set; }
 
     }
 }
